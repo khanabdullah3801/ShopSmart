@@ -370,3 +370,161 @@ void adminAddProduct() {
 
     cout << "Product added successfully!\n";
 }
+void restockProduct() {
+    int id, qty;
+    cout << "Product ID: ";
+    cin >> id;
+
+    Product* p = searchProduct(root, id);
+    if (!p) {
+        cout << "Product not found!\n";
+        return;
+    }
+
+    cout << "Quantity to add: ";
+    cin >> qty;
+    p->stock += qty;
+
+    cout << "Product restocked successfully!\n";
+}
+
+void deleteProductAdmin() {
+    int id;
+    cout << "Product ID to delete: ";
+    cin >> id;
+
+    if (!searchProduct(root, id)) {
+        cout << "Product not found!\n";
+        return;
+    }
+
+    root = deleteProduct(root, id);
+    cout << "Product deleted successfully!\n";
+}
+
+// Helper function for recursion
+void lowStockReportHelper(Product* r, bool &foundLow) {
+    if (!r) return;
+    
+    lowStockReportHelper(r->left, foundLow);
+    
+    if (r->stock < 5) {
+        cout << "Low Stock: " << r->name << " (" << r->stock << " left)\n";
+        foundLow = true;
+    }
+    
+    lowStockReportHelper(r->right, foundLow);
+}
+
+//lowStockReport function
+void lowStockReport(Product* r) {
+    bool foundLow = false;
+    lowStockReportHelper(r, foundLow);
+    if (!foundLow) {
+        cout << "No any product is at low stock.\n";
+    }
+}
+
+
+
+
+void showLogo() {
+    cout<<"\n===============================================================\n";
+    cout<<"   _____ _                 _____                      \n";
+    cout<<"  / ____| |               / ____|                     \n";
+    cout<<" | (___ | |__   ___  _ __| (___  _ __ ___   __ _ _ __  _____   \n";
+    cout<<"  \\___ \\| '_ \\ / _ \\| '__|\\___ \\| '_ ` _ \\ / _` | '__||     |\n";
+    cout<<"  ____) | | | | (_) | |   ____) | | | | | | (_| | |      ||\n";
+    cout<<" |_____/|_| |_|\\___/|_|  |_____/|_| |_| |_|\\__,_|_|      ||\n";
+    cout<<"                                                      \n";
+    cout<<"---------------------------------------------------------------\n";
+    cout<<"        SMART SHOPPING MANAGEMENT SYSTEM\n";
+    cout<<"===============================================================\n";
+}
+
+
+void showFrontPage() {
+    showLogo();
+    cout << "1. Register New User\n";
+    cout << "2. Login to Existing Account\n";
+    cout << "3. Admin Panel\n";
+    cout << "4. Exit Application\n";
+    cout << "----------------------------------------------------------\n";
+    cout << "Enter your choice: ";
+}
+
+
+/* ================= MAIN ================= */
+
+int main() {
+    loadUsers();
+    loadProducts();
+
+    int choice;
+
+    while (true) {
+        showFrontPage();
+        cin >> choice;
+
+        if (choice == 1) registerUser();
+
+        else if (choice == 2) {
+            if (!loginUser()) {
+                cout << "Invalid login!\n";
+                continue;
+            }
+
+            cout << "\nLogin Successful! Welcome back \n";
+
+
+            int c;
+            do {
+                cout<<"\n1. View Inventory\n2. Search by Category\n3. Add to Cart\n";
+                cout << "4. View Cart\n5. Undo\n6. Place Order\n7. Logout\nChoice: ";
+                cin >> c;
+
+                if (c == 1) displayInventory(root);
+                else if (c == 2) {
+                    string cat;
+                    cout << "Category: ";
+                    cin >> cat;
+                    searchByCategory(root, cat);
+                }
+                else if (c == 3) addToCart();
+                else if (c == 4) viewCart();
+                else if (c == 5) undoAction();
+                else if (c == 6) placeOrder();
+
+            } while (c != 7);
+            cout << "\nYou have logged out safely.\n";
+        }
+		
+
+        else if (choice == 3) {
+            int a;
+            do {
+                cout << "\n--- ADMIN PANEL ---\n";
+                cout << "1. Add Product\n2. Restock a Product\n3. Delete a Product\n";
+                cout << "4. View Inventory\n5. Low Stock Products\n6. Exit\nChoice: ";
+                cin >> a;
+
+                if (a == 1) adminAddProduct();
+                else if (a == 2) restockProduct();
+                else if (a == 3) deleteProductAdmin();
+                else if (a == 4) displayInventory(root);
+                else if (a == 5) lowStockReport(root);
+
+            } while (a != 6);
+        }
+
+        else {
+            cout << "\n====================================\n";
+			cout << " Thank you for choosing ShopSmart  \n";
+			cout << " Have a great day!\n";
+			cout << "====================================\n";
+
+            break;
+        }
+    }
+    return 0;
+}
