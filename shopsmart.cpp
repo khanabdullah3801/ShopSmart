@@ -190,10 +190,4 @@ Product* findMin(Product* r) {
     while (r->left) r = r->left;
     return r;
 }
-int main(){
 
-  //ShopSmart
-  
-
-  return 0;
-}
