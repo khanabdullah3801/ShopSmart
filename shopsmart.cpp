@@ -5,7 +5,7 @@
 #include <fstream>
 using namespace std;
 
-/* ================= USER MANAGEMENT (LINKED LIST) ================= */
+/* ================ USER MANAGEMENT (LINKED LIST) ================= */
 
 struct User {
     string username, password;
