@@ -28,9 +28,10 @@ void loadUsers() {
 void registerUser() {
     string u, p;
     cout << "Username: ";
-    cin >> u;
+    cin.ignore();
+    getline(cin,u);
     cout << "Password: ";
-    cin >> p;
+    getline(cin,p);
 
     User* n = new User(u, p);
     n->next = userHead;
@@ -46,9 +47,10 @@ void registerUser() {
 bool loginUser() {
     string u, p;
     cout << "Username: ";
-    cin >> u;
+    cin.ignore();
+    getline(cin,u);
     cout << "Password: ";
-    cin >> p;
+    getline(cin,p);
 
     User* t = userHead;
     while (t) {
