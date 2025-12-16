@@ -190,4 +190,181 @@ Product* findMin(Product* r) {
     while (r->left) r = r->left;
     return r;
 }
+//Delete Product
+Product* deleteProduct(Product* r, int id) {
+    if (!r) return r;
 
+    if (id < r->id)
+        r->left = deleteProduct(r->left, id);
+    else if (id > r->id)
+        r->right = deleteProduct(r->right, id);
+    else {
+        if (!r->left || !r->right) {
+            Product* temp = r->left ? r->left : r->right;
+            if (!temp) {
+                temp = r;
+                r = nullptr;
+            } else
+                *r = *temp;
+            delete temp;
+        } else {
+            Product* temp = findMin(r->right);
+            r->id = temp->id;
+            r->category = temp->category;
+            r->name = temp->name;
+            r->price = temp->price;
+            r->stock = temp->stock;
+            r->right = deleteProduct(r->right, temp->id);
+        }
+    }
+
+    if (!r) return r;
+
+    r->height = 1 + max(height(r->left), height(r->right));
+    int balance = getBalance(r);
+
+    // LL
+    if (balance > 1 && getBalance(r->left) >= 0)
+        return rightRotate(r);
+
+    // LR
+    if (balance > 1 && getBalance(r->left) < 0) {
+        r->left = leftRotate(r->left);
+        return rightRotate(r);
+    }
+
+    // RR
+    if (balance < -1 && getBalance(r->right) <= 0)
+        return leftRotate(r);
+
+    // RL
+    if (balance < -1 && getBalance(r->right) > 0) {
+        r->right = rightRotate(r->right);
+        return leftRotate(r);
+    }
+
+    return r;
+}
+
+/* ================= FILE LOADING ================= */
+
+void loadProducts() {
+    ifstream file("products.txt");
+    int id, stock;
+    string cat, name;
+    float price;
+
+    while (file >> id >> cat >> name >> price >> stock) {
+        root = insertProduct(root,
+            new Product(id, cat, name, price, stock));
+    }
+    file.close();
+}
+
+/* ================= CART & ORDER ================= */
+
+vector<Product*> cart;
+stack<string> undoStack;
+queue<vector<Product*>> orderQueue;
+
+void addToCart() {
+    int id;
+    cout << "Enter Product ID: ";
+    cin >> id;
+
+    Product* p = searchProduct(root, id);
+    if (!p || p->stock <= 0) {
+        cout << "Product unavailable!\n";
+        return;
+    }
+
+    cart.push_back(p);
+    undoStack.push("Added " + p->name);
+    cout << "Added to cart successfully!\n";
+}
+
+void undoAction() {
+    if (!undoStack.empty() && !cart.empty()) {
+        cout << "Undo: " << undoStack.top() << endl;
+        undoStack.pop();
+        cart.pop_back();
+    } else {
+        cout << "Nothing to undo!\n";
+    }
+}
+
+void placeOrder() {
+    if (cart.empty()) {
+        cout << "Cart is empty!\n";
+        return;
+    }
+
+    float total = 0;
+    cout << "\n========== ORDER SUMMARY ==========\n";
+
+    for (auto p : cart) {
+        cout << "Product: " << p->name
+             << " | Price: $" << p->price << endl;
+        p->stock--;
+        p->sold++;
+        total += p->price;
+    }
+
+    cout << "----------------------------------\n";
+    cout << "Total Bill: $" << total << endl;
+    cout << "Order Status: SUCCESS\n";
+    cout << "==================================\n";
+
+    orderQueue.push(cart);
+    cart.clear();
+}
+
+void viewCart() {
+    if (cart.empty()) {
+        cout << "Your cart is empty!\n";
+        return;
+    }
+
+    float total = 0;
+    cout << "\n========== YOUR CART ==========\n";
+
+    for (auto p : cart) {
+        cout << "Product: " << p->name
+             << " | Price: $" << p->price << endl;
+        total += p->price;
+    }
+
+    cout << "-------------------------------\n";
+    cout << "Total: $" << total << endl;
+    cout << "===============================\n";
+}
+
+/* ================= ADMIN FUNCTIONS ================= */
+
+void adminAddProduct() {
+    int id, stock;
+    float price;
+    string cat, name;
+
+    cout << "Product ID: ";
+    cin >> id;
+
+    if (searchProduct(root, id)) {
+        cout << "ID already exists!\n";
+        return;
+    }
+
+    cout << "Category: ";
+    cin >> cat;
+    cout << "Name: ";
+    cin >> name;
+    cout << "Price: ";
+    cin >> price;
+    cout << "Stock: ";
+    cin >> stock;
+
+    root = insertProduct(root,
+        new Product(id, cat, name, price, stock));
+
+    cout << "Product added successfully!\n";
+}
